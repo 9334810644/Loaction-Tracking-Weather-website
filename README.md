@@ -1,21 +1,25 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# ✨ Glam by Sowasti — Luxury Jewelry & Beauty Store
 
-# Run and deploy your AI Studio app
+> An exquisite, responsive e-commerce storefront designed for handcrafted jewelry and premium accessories, delivering a seamless luxury shopping experience.
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/bd3a7af9-40f6-47b6-b32d-e73cb5830029
+## ✨ Features
 
-## Run Locally
+- 💎 **Curated Product Showcase**: High-resolution gallery with product variants, price calculations, and product detail views.
+- 🛒 **Interactive Slide-out Cart**: Real-time subtotal calculation, item quantity controls, and smooth slide-over checkout drawer.
+- ❤️ **Favorites & Wishlist Drawer**: Save favorite pieces to personal wishlists with persistent local & cloud state.
+- 🎟️ **Promo & Discount Engine**: Dynamic promotional code validation with custom percentage and fixed discount handling.
+- ⭐ **Customer Reviews & Ratings**: Interactive customer feedback section with verified buyer ratings.
+- 📖 **Jewelry Care Guide Modal**: Comprehensive maintenance, cleaning, and storage recommendations for precious metals and gems.
+- 🔐 **Firebase Integration**: Real-time database updates, authentication, and scalable product storage.
+- 📱 **Mobile-First Responsive Design**: Polished glassmorphism aesthetics, fluid micro-interactions, and fast load times.
 
-**Prerequisites:**  Node.js
+---
 
+## 🛠️ Tech Stack
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
-
+- **Frontend**: React, TypeScript, Vite, Tailwind CSS
+- **Backend / Database**: Firebase (Firestore, Authentication, Storage)
+- **Icons & UI**: Lucide React, Custom Glassmorphism UI Components
+- **State & Storage**: Custom TypeScript Storage Utilities & React Hooks
