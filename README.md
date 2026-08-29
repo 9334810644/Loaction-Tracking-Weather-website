@@ -1,25 +1,25 @@
-# ✨ Glam by Sowasti — Luxury Jewelry & Beauty Store
+# 🌤️ Nimbus / Weather Tracker & Analytics App
 
-> An exquisite, responsive e-commerce storefront designed for handcrafted jewelry and premium accessories, delivering a seamless luxury shopping experience.
+> A feature-packed, real-time weather forecasting web application with live geolocation tracking, interactive meteorological maps, and an integrated admin analytics dashboard.
 
 ---
 
 ## ✨ Features
 
-- 💎 **Curated Product Showcase**: High-resolution gallery with product variants, price calculations, and product detail views.
-- 🛒 **Interactive Slide-out Cart**: Real-time subtotal calculation, item quantity controls, and smooth slide-over checkout drawer.
-- ❤️ **Favorites & Wishlist Drawer**: Save favorite pieces to personal wishlists with persistent local & cloud state.
-- 🎟️ **Promo & Discount Engine**: Dynamic promotional code validation with custom percentage and fixed discount handling.
-- ⭐ **Customer Reviews & Ratings**: Interactive customer feedback section with verified buyer ratings.
-- 📖 **Jewelry Care Guide Modal**: Comprehensive maintenance, cleaning, and storage recommendations for precious metals and gems.
-- 🔐 **Firebase Integration**: Real-time database updates, authentication, and scalable product storage.
-- 📱 **Mobile-First Responsive Design**: Polished glassmorphism aesthetics, fluid micro-interactions, and fast load times.
+- 📍 **Hyperlocal Geolocation**: Automatic browser-based location detection with high-accuracy weather data and reverse geocoding.
+- 🌦️ **Comprehensive Weather Metrics**: Live temperature, weather condition animations, humidity, UV index, wind speed, atmospheric pressure, and visibility.
+- 🕒 **Hourly & 7-Day Forecasts**: Dynamic weather progression timelines and week-ahead multi-day forecasts.
+- ⚠️ **Severe Weather Alerts**: Instant notifications for severe weather conditions and temperature anomalies.
+- 🗺️ **Interactive Weather Radar & Map**: Integrated Leaflet radar map with layer toggles and pin-drop location inspection.
+- 🔍 **Search & Bookmark System**: Instant global city search, recent search history, and favorite locations bookmarking.
+- 📊 **Owner / Admin Dashboard (`?role=owner`)**: Real-time visitor logs, live visitor mapping, device/browser insights, and traffic analytics.
+- 🎨 **Modern Glassmorphic UI**: Powered by Tailwind CSS and Framer Motion with dynamic weather-reactive background animations and Dark/Light mode support.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React, TypeScript, Vite, Tailwind CSS
-- **Backend / Database**: Firebase (Firestore, Authentication, Storage)
-- **Icons & UI**: Lucide React, Custom Glassmorphism UI Components
-- **State & Storage**: Custom TypeScript Storage Utilities & React Hooks
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS
+- **Animations & Icons**: Framer Motion (`motion/react`), Lucide React
+- **Mapping & Geodata**: Leaflet, Open-Meteo API
+- **Backend & APIs**: Express.js, Node.js / tsx
