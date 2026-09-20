@@ -18,379 +18,137 @@ export function BackgroundAnimation({ type }: BackgroundAnimationProps) {
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
 
-    // Particle Classes
-    interface Star {
-      x: number;
-      y: number;
-      size: number;
-      alpha: number;
-      speed: number;
-    }
-
-    interface Cloud {
-      x: number;
-      y: number;
-      radius: number;
-      speed: number;
-      opacity: number;
-    }
-
-    interface Raindrop {
-      x: number;
-      y: number;
-      length: number;
-      speed: number;
-      opacity: number;
-    }
-
-    interface Snowflake {
-      x: number;
-      y: number;
-      radius: number;
-      density: number;
-      speed: number;
-      angle: number;
-    }
-
-    interface Mist {
-      x: number;
-      y: number;
-      radiusX: number;
-      radiusY: number;
-      speed: number;
-      opacity: number;
-    }
-
-    // Initialize arrays
-    let stars: Star[] = [];
-    let clouds: Cloud[] = [];
-    let raindrops: Raindrop[] = [];
-    let snowflakes: Snowflake[] = [];
-    let mists: Mist[] = [];
-
-    // Animation states
-    let lightningFlash = 0;
-    let lightningTimer = 0;
-    let sunPulse = 0;
-
-    // Populate stars for night
-    const createStars = () => {
-      stars = [];
-      const count = Math.floor((width * height) / 8000);
-      for (let i = 0; i < count; i++) {
-        stars.push({
-          x: Math.random() * width,
-          y: Math.random() * (height * 0.7), // upper 70% of screen
-          size: Math.random() * 1.5 + 0.5,
-          alpha: Math.random(),
-          speed: Math.random() * 0.02 + 0.005,
-        });
-      }
-    };
-
-    // Populate clouds for cloudy
-    const createClouds = () => {
-      clouds = [];
-      const count = 5;
-      for (let i = 0; i < count; i++) {
-        clouds.push({
-          x: Math.random() * width,
-          y: Math.random() * (height * 0.3) + 50,
-          radius: Math.random() * 80 + 60,
-          speed: Math.random() * 0.3 + 0.1,
-          opacity: Math.random() * 0.15 + 0.08,
-        });
-      }
-    };
-
-    // Populate raindrops
-    const createRain = () => {
-      raindrops = [];
-      const count = Math.floor((width * height) / 12000);
-      for (let i = 0; i < count; i++) {
-        raindrops.push({
-          x: Math.random() * width,
-          y: Math.random() * height - height,
-          length: Math.random() * 20 + 15,
-          speed: Math.random() * 12 + 15,
-          opacity: Math.random() * 0.4 + 0.2,
-        });
-      }
-    };
-
-    // Populate snow
-    const createSnow = () => {
-      snowflakes = [];
-      const count = Math.floor((width * height) / 10000);
-      for (let i = 0; i < count; i++) {
-        snowflakes.push({
-          x: Math.random() * width,
-          y: Math.random() * height - height,
-          radius: Math.random() * 3 + 1,
-          density: Math.random() * 10,
-          speed: Math.random() * 1.5 + 0.5,
-          angle: Math.random() * 2 * Math.PI,
-        });
-      }
-    };
-
-    // Populate mist for fog
-    const createMist = () => {
-      mists = [];
-      const count = 15;
-      for (let i = 0; i < count; i++) {
-        mists.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          radiusX: Math.random() * 150 + 100,
-          radiusY: Math.random() * 50 + 30,
-          speed: Math.random() * 0.4 + 0.1,
-          opacity: Math.random() * 0.08 + 0.03,
-        });
-      }
-    };
-
-    // Initialize based on current type
-    const init = () => {
-      createStars();
-      createClouds();
-      createRain();
-      createSnow();
-      createMist();
-    };
-
-    init();
-
-    // Resize Handler
     const handleResize = () => {
       if (!canvas) return;
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
-      init();
+      initParticles();
     };
 
     window.addEventListener('resize', handleResize);
 
-    // Render loop
+    // Particle state
+    let particles: Array<{
+      x: number;
+      y: number;
+      size: number;
+      speedX: number;
+      speedY: number;
+      alpha: number;
+      targetAlpha: number;
+      phase?: number;
+    }> = [];
+
+    const initParticles = () => {
+      particles = [];
+      const particleCount = type === 'rainy' ? 50 : type === 'snowy' ? 40 : type === 'night' ? 60 : 20;
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          size: type === 'rainy' ? Math.random() * 18 + 10 : type === 'snowy' ? Math.random() * 2.5 + 1 : Math.random() * 1.5 + 0.5,
+          speedX: type === 'rainy' ? -1.2 : type === 'snowy' ? Math.sin(i) * 0.4 : (Math.random() - 0.5) * 0.2,
+          speedY: type === 'rainy' ? Math.random() * 7 + 7 : type === 'snowy' ? Math.random() * 0.9 + 0.6 : (Math.random() - 0.5) * 0.2,
+          alpha: Math.random() * 0.5 + 0.2,
+          targetAlpha: Math.random() * 0.7 + 0.2,
+          phase: Math.random() * Math.PI * 2,
+        });
+      }
+    };
+
+    initParticles();
+
+    let ambientTime = 0;
+
     const render = () => {
       ctx.clearRect(0, 0, width, height);
+      ambientTime += 0.01;
 
-      // Base solid gradient matches background time/mood
-      let gradient = ctx.createLinearGradient(0, 0, 0, height);
       if (type === 'sunny') {
-        gradient.addColorStop(0, '#0284c7'); // sky-600
-        gradient.addColorStop(0.5, '#38bdf8'); // sky-400
-        gradient.addColorStop(1, '#f0f9ff'); // sky-50
-      } else if (type === 'cloudy') {
-        gradient.addColorStop(0, '#334155'); // slate-700
-        gradient.addColorStop(0.6, '#475569'); // slate-600
-        gradient.addColorStop(1, '#cbd5e1'); // slate-300
-      } else if (type === 'rainy' || type === 'thunderstorm') {
-        gradient.addColorStop(0, '#1e293b'); // slate-800
-        gradient.addColorStop(0.6, '#0f172a'); // slate-900
-        gradient.addColorStop(1, '#1e293b'); // slate-800
-      } else if (type === 'snowy') {
-        gradient.addColorStop(0, '#1e1b4b'); // indigo-950
-        gradient.addColorStop(0.6, '#312e81'); // indigo-900
-        gradient.addColorStop(1, '#c7d2fe'); // indigo-200
+        const sunX = width * 0.85;
+        const sunY = height * 0.15;
+        const pulse = Math.sin(ambientTime * 0.8) * 15;
+        const grad = ctx.createRadialGradient(sunX, sunY, 10, sunX, sunY, 280 + pulse);
+        grad.addColorStop(0, 'rgba(251, 191, 36, 0.1)');
+        grad.addColorStop(0.5, 'rgba(245, 158, 11, 0.04)');
+        grad.addColorStop(1, 'rgba(245, 158, 11, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, 300, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (type === 'thunderstorm') {
+        const pulse = Math.sin(ambientTime * 0.5) * 0.02 + 0.05;
+        const grad = ctx.createRadialGradient(width * 0.5, height * 0.2, 50, width * 0.5, height * 0.2, width * 0.6);
+        grad.addColorStop(0, `rgba(168, 85, 247, ${pulse})`);
+        grad.addColorStop(1, 'rgba(99, 102, 241, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, width, height);
       } else if (type === 'night') {
-        gradient.addColorStop(0, '#030712'); // gray-950
-        gradient.addColorStop(0.7, '#0b0f19'); // deep blueish
-        gradient.addColorStop(1, '#111827'); // gray-900
-      } else if (type === 'fog') {
-        gradient.addColorStop(0, '#57534e'); // stone-600
-        gradient.addColorStop(0.5, '#78716c'); // stone-500
-        gradient.addColorStop(1, '#d6d3d1'); // stone-300
-      } else {
-        gradient.addColorStop(0, '#1e293b');
-        gradient.addColorStop(1, '#0f172a');
-      }
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
-
-      // Render Sunny Beams & Sun
-      if (type === 'sunny') {
-        sunPulse += 0.005;
-        const radius = 120 + Math.sin(sunPulse) * 10;
-        
-        // Glow effect
-        const sunGlow = ctx.createRadialGradient(width - 150, 150, 20, width - 150, 150, radius * 3);
-        sunGlow.addColorStop(0, 'rgba(253, 224, 71, 0.6)'); // amber/yellow
-        sunGlow.addColorStop(0.3, 'rgba(253, 224, 71, 0.2)');
-        sunGlow.addColorStop(1, 'rgba(253, 224, 71, 0)');
-        ctx.fillStyle = sunGlow;
-        ctx.beginPath();
-        ctx.arc(width - 150, 150, radius * 3, 0, 2 * Math.PI);
-        ctx.fill();
-
-        // Sun disc
-        ctx.fillStyle = '#fef08a'; // yellow-200
-        ctx.beginPath();
-        ctx.arc(width - 150, 150, radius * 0.6, 0, 2 * Math.PI);
-        ctx.fill();
+        const grad = ctx.createRadialGradient(width * 0.2, height * 0.2, 10, width * 0.2, height * 0.2, 400);
+        grad.addColorStop(0, 'rgba(99, 102, 241, 0.07)');
+        grad.addColorStop(1, 'rgba(15, 23, 42, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, width, height);
       }
 
-      // Render Night Starfield & Moon
-      if (type === 'night') {
-        // Star Twinkles
-        stars.forEach(star => {
-          star.alpha += star.speed;
-          if (star.alpha > 1 || star.alpha < 0.1) {
-            star.speed = -star.speed;
-          }
-          ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+      for (const p of particles) {
+        if (type === 'rainy') {
+          ctx.strokeStyle = `rgba(147, 197, 253, ${p.alpha * 0.3})`;
+          ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.arc(star.x, star.y, star.size, 0, 2 * Math.PI);
-          ctx.fill();
-        });
-
-        // Glowing Moon
-        const moonX = width - 150;
-        const moonY = 150;
-        const moonRadius = 45;
-
-        // Moon Glow
-        const moonGlow = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.8, moonX, moonY, moonRadius * 3);
-        moonGlow.addColorStop(0, 'rgba(186, 230, 253, 0.25)'); // sky-200
-        moonGlow.addColorStop(1, 'rgba(186, 230, 253, 0)');
-        ctx.fillStyle = moonGlow;
-        ctx.beginPath();
-        ctx.arc(moonX, moonY, moonRadius * 3, 0, 2 * Math.PI);
-        ctx.fill();
-
-        // Moon Body
-        ctx.fillStyle = '#e0f2fe'; // sky-100
-        ctx.beginPath();
-        ctx.arc(moonX, moonY, moonRadius, 0, 2 * Math.PI);
-        ctx.fill();
-
-        // Shadow overlap to create perfect crescent
-        ctx.fillStyle = '#030712'; // match background starfield
-        ctx.beginPath();
-        ctx.arc(moonX - 15, moonY - 5, moonRadius * 1.05, 0, 2 * Math.PI);
-        ctx.fill();
-      }
-
-      // Render Clouds
-      if (type === 'cloudy' || type === 'sunny') {
-        clouds.forEach(cloud => {
-          cloud.x += cloud.speed;
-          if (cloud.x - cloud.radius > width) {
-            cloud.x = -cloud.radius;
-            cloud.y = Math.random() * (height * 0.3) + 50;
-          }
-
-          const cloudGrad = ctx.createRadialGradient(cloud.x, cloud.y, cloud.radius * 0.2, cloud.x, cloud.y, cloud.radius);
-          if (type === 'sunny') {
-            cloudGrad.addColorStop(0, `rgba(255, 255, 255, ${cloud.opacity * 1.8})`);
-            cloudGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-          } else {
-            cloudGrad.addColorStop(0, `rgba(226, 232, 240, ${cloud.opacity})`); // slate-200
-            cloudGrad.addColorStop(1, 'rgba(148, 163, 184, 0)'); // slate-400
-          }
-          ctx.fillStyle = cloudGrad;
-
-          ctx.beginPath();
-          ctx.arc(cloud.x, cloud.y, cloud.radius, 0, 2 * Math.PI);
-          ctx.fill();
-        });
-      }
-
-      // Render Rain
-      if (type === 'rainy' || type === 'thunderstorm') {
-        raindrops.forEach(drop => {
-          drop.y += drop.speed;
-          // Apply horizontal drift
-          drop.x -= 2;
-
-          if (drop.y > height) {
-            drop.y = -drop.length;
-            drop.x = Math.random() * width;
-          }
-
-          ctx.strokeStyle = `rgba(186, 230, 253, ${drop.opacity})`;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.moveTo(drop.x, drop.y);
-          ctx.lineTo(drop.x - 4, drop.y + drop.length);
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x + p.speedX * 2, p.y + p.size);
           ctx.stroke();
-        });
-      }
 
-      // Render Lightning for Thunderstorm
-      if (type === 'thunderstorm') {
-        lightningTimer++;
-        if (lightningFlash > 0) {
-          lightningFlash -= 0.05;
-          ctx.fillStyle = `rgba(224, 242, 254, ${lightningFlash})`;
-          ctx.fillRect(0, 0, width, height);
+          p.x += p.speedX;
+          p.y += p.speedY;
 
-          // Draw random lightning bolt
-          if (lightningFlash > 0.6) {
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            let curX = Math.random() * width;
-            let curY = 0;
-            ctx.moveTo(curX, curY);
-
-            while (curY < height) {
-              curX += (Math.random() - 0.5) * 60;
-              curY += Math.random() * 100 + 40;
-              ctx.lineTo(curX, curY);
-            }
-            ctx.stroke();
+          if (p.y > height) {
+            p.y = -20;
+            p.x = Math.random() * width;
           }
-        }
+        } else if (type === 'snowy') {
+          p.phase = (p.phase || 0) + 0.02;
+          const wobble = Math.sin(p.phase) * 0.8;
 
-        // Random trigger lightning
-        if (lightningTimer > 180 && Math.random() < 0.015) {
-          lightningFlash = Math.random() * 0.4 + 0.5;
-          lightningTimer = 0;
-        }
-      }
-
-      // Render Snow
-      if (type === 'snowy') {
-        snowflakes.forEach(flake => {
-          flake.y += flake.speed;
-          flake.angle += 0.01;
-          flake.x += Math.sin(flake.angle) * 0.5;
-
-          if (flake.y > height) {
-            flake.y = -flake.radius;
-            flake.x = Math.random() * width;
-          }
-
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+          ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha * 0.55})`;
           ctx.beginPath();
-          ctx.arc(flake.x, flake.y, flake.radius, 0, 2 * Math.PI);
+          ctx.arc(p.x + wobble, p.y, p.size, 0, Math.PI * 2);
           ctx.fill();
-        });
-      }
 
-      // Render Mist / Fog
-      if (type === 'fog') {
-        mists.forEach(mist => {
-          mist.x += mist.speed;
-          if (mist.x - mist.radiusX > width) {
-            mist.x = -mist.radiusX;
+          p.y += p.speedY;
+          if (p.y > height) {
+            p.y = -10;
+            p.x = Math.random() * width;
+          }
+        } else if (type === 'night') {
+          p.alpha += (p.targetAlpha - p.alpha) * 0.02;
+          if (Math.abs(p.targetAlpha - p.alpha) < 0.05) {
+            p.targetAlpha = Math.random() * 0.7 + 0.15;
           }
 
-          // draw ellipse mist puff
-          ctx.save();
-          const mistGrad = ctx.createRadialGradient(mist.x, mist.y, 20, mist.x, mist.y, mist.radiusX);
-          mistGrad.addColorStop(0, `rgba(245, 245, 244, ${mist.opacity})`);
-          mistGrad.addColorStop(1, 'rgba(245, 245, 244, 0)');
-          ctx.fillStyle = mistGrad;
-
+          ctx.fillStyle = `rgba(226, 232, 240, ${p.alpha * 0.45})`;
           ctx.beginPath();
-          ctx.translate(mist.x, mist.y);
-          ctx.scale(mist.radiusX / mist.radiusY, 1);
-          ctx.arc(0, 0, mist.radiusY, 0, 2 * Math.PI);
-          ctx.restore();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
           ctx.fill();
-        });
+        } else if (type === 'fog' || type === 'cloudy') {
+          p.x += p.speedX;
+          p.y += p.speedY;
+
+          if (p.x < 0) p.x = width;
+          if (p.x > width) p.x = 0;
+          if (p.y < 0) p.y = height;
+          if (p.y > height) p.y = 0;
+
+          const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 25);
+          grad.addColorStop(0, `rgba(203, 213, 225, ${p.alpha * 0.025})`);
+          grad.addColorStop(1, 'rgba(203, 213, 225, 0)');
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * 25, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
       animationFrameId = requestAnimationFrame(render);
@@ -405,9 +163,23 @@ export function BackgroundAnimation({ type }: BackgroundAnimationProps) {
   }, [type]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none -z-10 transition-colors duration-1000"
-    />
+    <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden transition-opacity duration-1000">
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-90" />
+      <div
+        className={`absolute inset-0 transition-all duration-1000 ${
+          type === 'sunny'
+            ? 'bg-gradient-to-b from-amber-500/5 via-sky-500/5 to-transparent'
+            : type === 'rainy'
+              ? 'bg-gradient-to-b from-blue-950/20 via-sky-900/10 to-transparent'
+              : type === 'thunderstorm'
+                ? 'bg-gradient-to-b from-purple-950/25 via-slate-900/20 to-transparent'
+                : type === 'snowy'
+                  ? 'bg-gradient-to-b from-sky-950/20 via-slate-900/10 to-transparent'
+                  : type === 'night'
+                    ? 'bg-gradient-to-b from-indigo-950/25 via-slate-950/20 to-transparent'
+                    : 'bg-gradient-to-b from-slate-900/10 to-transparent'
+        }`}
+      />
+    </div>
   );
 }

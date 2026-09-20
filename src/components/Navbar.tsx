@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Heart, RefreshCw, Sun, Moon, History, Star, MapPin, Shield } from 'lucide-react';
+import { Search, Heart, RefreshCw, Sun, Moon, History, Bookmark, MapPin, X, Sparkles } from 'lucide-react';
 import { SavedCity, UserPreferences } from '../types';
 
 interface NavbarProps {
   onSearch: (query: string) => void;
   onRefresh: () => void;
   onRequestLocation?: () => void;
-  onOpenOwnerView?: () => void;
   isLocating?: boolean;
   preferences: UserPreferences;
   onToggleUnit: () => void;
@@ -24,7 +23,6 @@ export function Navbar({
   onSearch,
   onRefresh,
   onRequestLocation,
-  onOpenOwnerView,
   isLocating,
   preferences,
   onToggleUnit,
@@ -38,119 +36,131 @@ export function Navbar({
 }: NavbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcut '/' to focus search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/' && document.activeElement !== searchInputRef.current) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        setShowDropdown(true);
+      } else if (e.key === 'Escape') {
+        setShowDropdown(false);
+        searchInputRef.current?.blur();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      onSearch(searchQuery);
+      onSearch(searchQuery.trim());
       setShowDropdown(false);
     }
   };
 
   const handleCitySelect = (city: SavedCity) => {
     onSelectCity(city.lat, city.lon, city.name, city.country);
+    setSearchQuery('');
     setShowDropdown(false);
   };
 
+  const isLight = preferences.theme === 'light';
+
   return (
-    <nav className={`sticky top-0 z-40 w-full border-b transition-all duration-300 px-4 py-3 ${
-      preferences.theme === 'light' 
-        ? 'bg-white/80 border-slate-200/50 backdrop-blur-md text-slate-800 shadow-sm' 
-        : 'bg-slate-950/40 border-white/10 backdrop-blur-md text-slate-100'
-    }`}>
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-3 items-center justify-between">
+    <header className="sticky top-0 z-40 w-full px-4 sm:px-6 py-3 transition-colors duration-300">
+      <div className={`max-w-6xl mx-auto flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl border backdrop-blur-xl transition-all ${
+        isLight
+          ? 'bg-white/80 border-slate-200/80 shadow-sm shadow-slate-200/50 text-slate-800'
+          : 'bg-slate-900/60 border-white/10 shadow-lg shadow-black/20 text-slate-100'
+      }`}>
         
-        {/* Branding & Clock */}
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-sky-500/10 text-sky-500">
-            <Sun className="w-6 h-6 animate-spin-slow" />
+        {/* Brand / Logo */}
+        <div className="flex items-center gap-2.5 shrink-0 select-none">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-white shadow-md shadow-sky-500/25">
+            <Sparkles className="w-4 h-4 animate-pulse" />
           </div>
-          <div>
-            <span className={`text-xl font-bold tracking-tight font-sans ${preferences.theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
-              Sky<span className="text-sky-500">Pulse</span>
-            </span>
-            <span className={`ml-2 text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-              preferences.theme === 'light' 
-                ? 'bg-slate-900/5 border-slate-900/5 text-slate-500' 
-                : 'bg-white/5 border-white/10 text-slate-400'
-            }`}>
-              v1.0.0
-            </span>
-          </div>
+          <span className="font-display text-lg font-bold tracking-tight">
+            Sky<span className="text-sky-500">Pulse</span>
+          </span>
         </div>
 
-        {/* Search Bar Block */}
-        <div className="relative w-full md:max-w-md shrink-0">
+        {/* Minimalist Search Bar */}
+        <div className="relative flex-1 max-w-sm sm:max-w-md mx-2">
           <form onSubmit={handleSearchSubmit} className="relative flex items-center">
+            <Search className={`absolute left-3.5 w-4 h-4 pointer-events-none transition-colors ${
+              isLight ? 'text-slate-400' : 'text-slate-500'
+            }`} />
             <input
+              ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setShowDropdown(true)}
-              placeholder="Search city, state or country..."
-              className={`w-full pl-10 pr-12 py-2.5 text-sm transition-all focus:outline-none ${
-                preferences.theme === 'light'
-                  ? 'sleek-input-light text-slate-900 placeholder:text-slate-400'
-                  : 'sleek-input-dark text-slate-100 placeholder:text-slate-500'
+              placeholder="Search city... (Press / to search)"
+              className={`w-full pl-9 pr-8 py-2 text-xs sm:text-sm rounded-xl border transition-all outline-none ${
+                isLight
+                  ? 'bg-slate-100/80 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-sky-500/60 focus:ring-2 focus:ring-sky-500/15'
+                  : 'bg-white/5 border-white/10 text-slate-100 placeholder:text-slate-500 focus:bg-white/10 focus:border-sky-400/60 focus:ring-2 focus:ring-sky-400/15'
               }`}
             />
-            <Search className={`absolute left-3.5 w-4 h-4 ${preferences.theme === 'light' ? 'text-slate-400' : 'text-slate-500'}`} />
-            
             {searchQuery && (
               <button
-                type="submit"
-                className="absolute right-3.5 text-xs text-sky-500 hover:text-sky-600 font-medium cursor-pointer"
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className={`absolute right-2.5 p-1 rounded-md transition-colors ${
+                  isLight ? 'text-slate-400 hover:text-slate-600' : 'text-slate-500 hover:text-slate-300'
+                }`}
               >
-                Search
+                <X className="w-3.5 h-3.5" />
               </button>
             )}
           </form>
 
-          {/* Quick-Access Dropdown for Favorites and Recent Searches */}
+          {/* Clean Floating Suggestions Dropdown */}
           <AnimatePresence>
             {showDropdown && (favorites.length > 0 || recentSearches.length > 0) && (
               <>
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-10" 
-                  onClick={() => setShowDropdown(false)}
+                <div 
+                  className="fixed inset-0 z-20" 
+                  onClick={() => setShowDropdown(false)} 
                 />
-                <motion.div 
-                  initial={{ opacity: 0, y: -10, scale: 0.96 }}
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -10, scale: 0.96 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                  className={`absolute top-full left-0 right-0 mt-2 z-20 overflow-hidden border rounded-3xl shadow-2xl p-4 backdrop-blur-2xl transition-all ${
-                    preferences.theme === 'light' 
-                      ? 'bg-white/95 border-slate-200/80 shadow-slate-900/10' 
-                      : 'bg-slate-950/90 border-white/10 shadow-black/40'
+                  exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                  className={`absolute top-full left-0 right-0 mt-2 z-30 p-3 rounded-2xl border shadow-xl backdrop-blur-2xl max-h-80 overflow-y-auto ${
+                    isLight
+                      ? 'bg-white/95 border-slate-200 shadow-slate-900/10'
+                      : 'bg-slate-900/95 border-white/10 shadow-black/40'
                   }`}
                 >
-                  {/* Favorites List */}
+                  {/* Favorites */}
                   {favorites.length > 0 && (
-                    <div className="mb-4">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-sky-500 uppercase tracking-wider mb-2">
-                        <Star className="w-3.5 h-3.5 fill-sky-500/10" />
-                        Saved Locations
+                    <div className="mb-3">
+                      <div className="flex items-center gap-1.5 text-[11px] font-semibold text-sky-500 uppercase tracking-wider px-1 mb-1.5">
+                        <Bookmark className="w-3 h-3" />
+                        <span>Saved Places</span>
                       </div>
-                      <div className="grid grid-cols-2 gap-1.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
                         {favorites.map((city) => (
-                          <motion.button
+                          <button
                             key={city.id}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
+                            type="button"
                             onClick={() => handleCitySelect(city)}
-                            className={`flex items-center gap-2 p-2.5 text-left text-xs font-semibold rounded-2xl border transition-all text-ellipsis overflow-hidden whitespace-nowrap cursor-pointer ${
-                              preferences.theme === 'light'
-                                ? 'text-slate-700 hover:text-slate-950 bg-slate-900/5 hover:bg-slate-900/10 border-transparent'
-                                : 'text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border-white/5'
+                            className={`flex items-center gap-2 p-2 text-left text-xs font-medium rounded-xl transition-colors truncate ${
+                              isLight
+                                ? 'hover:bg-slate-100 text-slate-700'
+                                : 'hover:bg-white/10 text-slate-200'
                             }`}
                           >
-                            <MapPin className="w-3.5 h-3.5 shrink-0 text-sky-400" />
+                            <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0" />
                             <span className="truncate">{city.name}</span>
-                          </motion.button>
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -159,40 +169,41 @@ export function Navbar({
                   {/* Recent Searches */}
                   {recentSearches.length > 0 && (
                     <div>
-                      <div className={`flex items-center justify-between text-xs font-bold uppercase tracking-wider mb-2 ${
-                        preferences.theme === 'light' ? 'text-slate-400' : 'text-slate-500'
-                      }`}>
-                        <span className="flex items-center gap-1.5">
-                          <History className="w-3.5 h-3.5 text-sky-400" />
-                          Recent Searches
+                      <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider px-1 mb-1.5">
+                        <span className={`flex items-center gap-1.5 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>
+                          <History className="w-3 h-3" />
+                          Recent
                         </span>
                         <button
+                          type="button"
                           onClick={onClearRecent}
-                          className="text-[10px] font-bold lowercase text-sky-500 hover:text-sky-600 transition-colors cursor-pointer"
+                          className="text-[10px] text-sky-500 hover:underline cursor-pointer"
                         >
-                          clear
+                          Clear
                         </button>
                       </div>
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-0.5">
                         {recentSearches.map((city) => (
-                          <motion.button
+                          <button
                             key={city.id}
-                            whileHover={{ x: 4 }}
+                            type="button"
                             onClick={() => handleCitySelect(city)}
-                            className={`flex items-center justify-between p-2 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
-                              preferences.theme === 'light'
-                                ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
-                                : 'text-slate-300 hover:text-white hover:bg-white/5'
+                            className={`flex items-center justify-between p-2 text-left text-xs rounded-xl transition-colors ${
+                              isLight
+                                ? 'hover:bg-slate-100 text-slate-700'
+                                : 'hover:bg-white/10 text-slate-200'
                             }`}
                           >
-                            <span className="flex items-center gap-2 text-ellipsis overflow-hidden whitespace-nowrap">
-                              <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                              <span>{city.name}</span>
-                              {city.country && (
-                                <span className="text-[11px] text-slate-500 font-normal">({city.country})</span>
-                              )}
+                            <span className="flex items-center gap-2 truncate">
+                              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <span className="truncate">{city.name}</span>
                             </span>
-                          </motion.button>
+                            {city.country && (
+                              <span className={`text-[10px] truncate ml-2 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>
+                                {city.country}
+                              </span>
+                            )}
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -203,120 +214,93 @@ export function Navbar({
           </AnimatePresence>
         </div>
 
-        {/* Toolbar controls */}
-        <div className="flex items-center gap-2.5">
-          {/* My Location Button */}
+        {/* Unified Control Pill */}
+        <div className={`flex items-center gap-1 p-1 rounded-xl border ${
+          isLight ? 'bg-slate-100/80 border-slate-200/80' : 'bg-white/5 border-white/10'
+        }`}>
+          {/* My Location */}
           {onRequestLocation && (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
+              type="button"
               onClick={onRequestLocation}
-              id="btn-request-location"
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl border transition-all cursor-pointer text-xs font-bold ${
+              title="Use current location"
+              aria-label="Use current location"
+              className={`p-1.5 rounded-lg transition-all ${
                 isLocating
-                  ? 'bg-sky-500/20 border-sky-500/40 text-sky-400 animate-pulse ring-1 ring-sky-400/30'
-                  : preferences.theme === 'light'
-                    ? 'bg-sky-500/10 border-sky-500/20 text-sky-600 hover:bg-sky-500/20'
-                    : 'bg-sky-500/15 border-sky-500/30 text-sky-300 hover:bg-sky-500/25'
+                  ? 'bg-sky-500 text-white animate-pulse'
+                  : isLight
+                    ? 'text-slate-600 hover:text-slate-900 hover:bg-white'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
               }`}
-              title="Fetch weather for my current location"
             >
-              <MapPin className={`w-4 h-4 text-sky-400 ${isLocating ? 'animate-bounce' : ''}`} />
-              <span className="hidden sm:inline">My Location</span>
-            </motion.button>
+              <MapPin className="w-4 h-4" />
+            </button>
           )}
 
-          {/* Add Favorite Toggle */}
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+          {/* Bookmark / Favorite current */}
+          <button
+            type="button"
             onClick={onToggleFavorite}
-            id="btn-toggle-favorite"
-            className={`p-2.5 rounded-2xl border transition-all cursor-pointer ${
+            title={isCurrentFavorite ? 'Remove from favorites' : 'Save location'}
+            aria-label="Toggle favorite"
+            className={`p-1.5 rounded-lg transition-all ${
               isCurrentFavorite
-                ? 'bg-rose-500/15 border-rose-500/30 text-rose-500 shadow-lg shadow-rose-500/10'
-                : preferences.theme === 'light'
-                  ? 'bg-slate-900/5 border-slate-900/5 text-slate-600 hover:bg-slate-900/10 hover:text-slate-800'
-                  : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white'
+                ? 'text-rose-500'
+                : isLight
+                  ? 'text-slate-600 hover:text-slate-900 hover:bg-white'
+                  : 'text-slate-300 hover:text-white hover:bg-white/10'
             }`}
-            title="Favorite this location"
           >
-            <Heart className={`w-5 h-5 ${isCurrentFavorite ? 'fill-rose-500' : ''}`} />
-          </motion.button>
+            <Heart className={`w-4 h-4 ${isCurrentFavorite ? 'fill-rose-500' : ''}`} />
+          </button>
 
-          {/* Unit Switcher */}
-          <motion.button
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.92 }}
+          {/* Temperature Unit */}
+          <button
+            type="button"
             onClick={onToggleUnit}
-            id="btn-toggle-unit"
-            className={`flex items-center gap-1 px-3.5 py-2 rounded-2xl border font-mono text-xs font-extrabold transition-all cursor-pointer ${
-              preferences.theme === 'light'
-                ? 'bg-slate-900/5 border-slate-900/5 text-slate-700 hover:bg-slate-900/10 hover:text-slate-950'
-                : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white'
+            title="Switch temperature unit"
+            aria-label="Toggle unit"
+            className={`px-2 py-1 text-xs font-mono font-semibold rounded-lg transition-all ${
+              isLight
+                ? 'text-slate-700 hover:text-slate-900 hover:bg-white'
+                : 'text-slate-300 hover:text-white hover:bg-white/10'
             }`}
-            title="Toggle Temperature Unit"
           >
-            <span>°{preferences.unit.toUpperCase()}</span>
-          </motion.button>
+            °{preferences.unit.toUpperCase()}
+          </button>
 
           {/* Theme Toggle */}
-          <motion.button
-            whileHover={{ scale: 1.1, rotate: 15 }}
-            whileTap={{ scale: 0.9 }}
+          <button
+            type="button"
             onClick={onToggleTheme}
-            id="btn-toggle-theme"
-            className={`p-2.5 rounded-2xl border transition-all cursor-pointer ${
-              preferences.theme === 'light'
-                ? 'bg-slate-900/5 border-slate-900/5 text-slate-600 hover:bg-slate-900/10 hover:text-slate-800'
-                : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white'
+            title="Toggle theme"
+            aria-label="Toggle theme"
+            className={`p-1.5 rounded-lg transition-all ${
+              isLight
+                ? 'text-slate-600 hover:text-slate-900 hover:bg-white'
+                : 'text-slate-300 hover:text-white hover:bg-white/10'
             }`}
-            title="Toggle theme (Light / Dark)"
           >
-            {preferences.theme === 'dark' ? (
-              <Sun className="w-5 h-5 text-amber-400 sleek-glow-yellow" />
-            ) : (
-              <Moon className="w-5 h-5 text-indigo-600" />
-            )}
-          </motion.button>
+            {isLight ? <Moon className="w-4 h-4 text-slate-700" /> : <Sun className="w-4 h-4 text-amber-400" />}
+          </button>
 
-          {/* Owner Portal Button */}
-          {onOpenOwnerView && (
-            <motion.button
-              whileHover={{ scale: 1.05, y: -1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onOpenOwnerView}
-              id="btn-owner-portal"
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl border transition-all cursor-pointer text-xs font-bold ${
-                preferences.theme === 'light'
-                  ? 'bg-rose-500/10 border-rose-500/20 text-rose-600 hover:bg-rose-500/20'
-                  : 'bg-rose-500/15 border-rose-500/30 text-rose-400 hover:bg-rose-500/25 shadow-lg shadow-rose-500/10'
-              }`}
-              title="Open Owner Geolocation Portal"
-            >
-              <Shield className="w-4 h-4 text-rose-500" />
-              <span className="hidden lg:inline">Owner Portal</span>
-            </motion.button>
-          )}
-
-          {/* Refresh Button */}
-          <motion.button
-            whileHover={{ rotate: 90 }}
-            whileTap={{ scale: 0.9 }}
+          {/* Refresh */}
+          <button
+            type="button"
             onClick={onRefresh}
-            id="btn-refresh-weather"
-            className={`p-2.5 rounded-2xl border transition-all cursor-pointer ${
-              preferences.theme === 'light'
-                ? 'bg-slate-900/5 border-slate-900/5 text-slate-600 hover:bg-slate-900/10 hover:text-slate-800'
-                : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white'
+            title="Refresh weather"
+            aria-label="Refresh data"
+            className={`p-1.5 rounded-lg transition-all ${
+              isLight
+                ? 'text-slate-600 hover:text-slate-900 hover:bg-white'
+                : 'text-slate-300 hover:text-white hover:bg-white/10'
             }`}
-            title="Refresh current conditions"
           >
-            <RefreshCw className="w-5 h-5" />
-          </motion.button>
+            <RefreshCw className="w-4 h-4" />
+          </button>
         </div>
 
       </div>
-    </nav>
+    </header>
   );
 }

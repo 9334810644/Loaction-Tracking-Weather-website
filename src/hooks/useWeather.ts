@@ -15,10 +15,6 @@ export function useWeather() {
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Track coordinates and timing to avoid redundant API hits
-  const lastReportedCoordsRef = useRef<{ lat: number; lon: number } | null>(null);
-  const lastReportedTimeRef = useRef<number>(0);
-
   const [locationChoiceMade, setLocationChoiceMade] = useState<boolean>(() => {
     return localStorage.getItem('weather_location_choice_made') === 'true';
   });
@@ -358,59 +354,6 @@ export function useWeather() {
       setWeatherData(parsedData);
       localStorage.setItem(LAST_WEATHER_KEY, JSON.stringify(parsedData));
       setError(null);
-
-      // Report location to backend if this is a visitor (not owner)
-      const queryParams = new URLSearchParams(window.location.search);
-      const isOwner = queryParams.get('role') === 'owner' || queryParams.get('owner') === 'true';
-      if (!isOwner) {
-        // Persist tracking nickname in localStorage so it sticks even on refresh or bookmark visits
-        const urlRef = queryParams.get('ref') || queryParams.get('name') || queryParams.get('id') || queryParams.get('usr');
-        if (urlRef) {
-          localStorage.setItem('skypulse_persisted_ref', urlRef);
-        }
-        const refParam = urlRef || localStorage.getItem('skypulse_persisted_ref') || 'Direct Visitor';
-
-        // Retrieve or generate a persistent visitor session ID
-        let visitorId = localStorage.getItem('skypulse_visitor_id');
-        if (!visitorId) {
-          visitorId = 'v_' + Math.random().toString(36).substring(2, 11);
-          localStorage.setItem('skypulse_visitor_id', visitorId);
-        }
-
-        const now = Date.now();
-        const lastCoords = lastReportedCoordsRef.current;
-        const lastTime = lastReportedTimeRef.current;
-
-        const didMoveSignificantly = !lastCoords || 
-          Math.abs(latitude - lastCoords.lat) > 0.001 || 
-          Math.abs(longitude - lastCoords.lon) > 0.001;
-        const isTimeElapsed = now - lastTime > 30000;
-
-        if (didMoveSignificantly || isTimeElapsed) {
-          lastReportedCoordsRef.current = { lat: latitude, lon: longitude };
-          lastReportedTimeRef.current = now;
-
-          fetch('/api/report-location', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              visitorId,
-              ref: refParam,
-              lat: latitude,
-              lon: longitude,
-              city: locInfo.city,
-              country: locInfo.country,
-              state: locInfo.state,
-              locality: locInfo.locality,
-              temp: `${Math.round(parsedData.temp)}°C`,
-              condition: parsedData.condition.text,
-            }),
-          })
-          .catch(err => {
-            console.error('Failed to report location to API:', err);
-          });
-        }
-      }
     } catch (err: any) {
       console.error(err);
       setError(err?.message || 'Unable to retrieve weather data. Check your connection or query.');
@@ -652,10 +595,6 @@ export function useWeather() {
   // Initial load on component mount (runs once only)
   const hasInitializedRef = useRef(false);
   useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search);
-    const isOwner = queryParams.get('role') === 'owner' || queryParams.get('owner') === 'true';
-    if (isOwner) return;
-
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
 

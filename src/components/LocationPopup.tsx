@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { MapPin, X, ShieldCheck } from 'lucide-react';
+import { MapPin, X } from 'lucide-react';
 
 interface LocationPopupProps {
   onAllow: () => void;
@@ -8,68 +8,41 @@ interface LocationPopupProps {
 
 export function LocationPopup({ onAllow, onDecline }: LocationPopupProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-        className="w-full max-w-md p-6 overflow-hidden text-slate-100 border border-white/10 rounded-3xl bg-slate-900/80 backdrop-blur-2xl shadow-2xl"
-      >
-        <div className="flex flex-col items-center text-center">
-          {/* Animated Map Pin Pulse */}
-          <div className="relative flex items-center justify-center w-16 h-16 mb-5 rounded-2xl bg-sky-500/10 text-sky-400">
-            <motion.div
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-              className="absolute inset-0 rounded-2xl bg-sky-500/5"
-            />
-            <MapPin className="w-8 h-8" />
-          </div>
-
-          <h2 className="text-2xl font-semibold tracking-tight text-white mb-2 font-sans">
-            Weather Location Access
-          </h2>
-          
-          <p className="text-slate-300 text-sm leading-relaxed mb-6">
-            Allow location access to get accurate, real-time local weather forecasts for your current location.
-          </p>
-
-          {/* Privacy Disclaimer Card */}
-          <div className="flex gap-3 p-4 mb-6 text-left text-xs bg-emerald-500/5 border border-emerald-500/10 rounded-2xl text-slate-300">
-            <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-medium text-emerald-400 mb-0.5">Privacy Guaranteed</p>
-              <p>
-                We value your privacy. Your location coordinates are used exclusively in your browser to fetch weather forecasts. We never collect, track, store, or sell your personal data.
-              </p>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col w-full gap-2.5">
-            <motion.button
-              whileHover={{ scale: 1.02, y: -1 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={onAllow}
-              id="btn-allow-location"
-              className="flex items-center justify-center w-full gap-2 px-5 py-3.5 font-bold text-white transition-all bg-sky-500 rounded-2xl hover:bg-sky-400 shadow-xl shadow-sky-500/25 cursor-pointer"
-            >
-              <span>📍 Allow Location</span>
-            </motion.button>
-            
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={onDecline}
-              id="btn-decline-location"
-              className="flex items-center justify-center w-full gap-2 px-5 py-3.5 font-bold transition-all border border-white/10 bg-white/5 text-slate-300 rounded-2xl hover:bg-white/10 hover:text-white cursor-pointer"
-            >
-              <span>❌ Continue without Location</span>
-            </motion.button>
-          </div>
+    <motion.aside
+      aria-label="Location permission banner"
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 20, scale: 0.95 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      className="fixed bottom-6 inset-x-4 max-w-md mx-auto z-50 p-4 rounded-2xl border backdrop-blur-2xl bg-slate-900/90 border-white/10 text-slate-100 shadow-2xl flex items-center justify-between gap-3"
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center shrink-0">
+          <MapPin className="w-5 h-5" />
         </div>
-      </motion.div>
-    </div>
+        <div className="min-w-0">
+          <h4 className="text-sm font-semibold text-white tracking-tight">Enable Local Weather</h4>
+          <p className="text-xs text-slate-400 truncate">Get instant forecasts for your location</p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 shrink-0">
+        <button
+          type="button"
+          onClick={onAllow}
+          className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-sky-500 hover:bg-sky-400 text-white transition-all shadow-md shadow-sky-500/20"
+        >
+          Enable
+        </button>
+        <button
+          type="button"
+          onClick={onDecline}
+          aria-label="Dismiss location request"
+          className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </motion.aside>
   );
 }

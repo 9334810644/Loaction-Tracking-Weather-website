@@ -1,6 +1,5 @@
 {
-  "name": "Weather App",
-  "description": "A beautiful, modern weather website with glassmorphism design, real-time geolocation, weather animations, interactive map, 7-day forecast, hourly charts, city search, and offline support.",
-  "requestFramePermissions": ["geolocation"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "name": "SkyPulse Weather",
+  "description": "A minimalist, clutter-free, modern aesthetic weather application with hyperlocal forecasts, 7-day outlook, hourly timeline, interactive radar, and offline support.",
+  "requestFramePermissions": ["geolocation"]
 }
