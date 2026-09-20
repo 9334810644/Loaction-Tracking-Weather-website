@@ -174,4 +174,14 @@
   color: #ffffff !important;
 }
 
+/* Watermark-free, clean dark/light map styling */
+.map-tiles-dark {
+  filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(90%) saturate(60%) !important;
+}
+
+.map-tiles-light {
+  filter: saturate(95%) contrast(95%) !important;
+}
+
+
 

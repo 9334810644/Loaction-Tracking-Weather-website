@@ -66,9 +66,7 @@ export function WeatherMap({ latitude, longitude, cityName, theme = 'dark' }: We
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    const tileUrl = isLight
-      ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    const tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 
     const map = L.map(mapContainerRef.current, {
       center: [latitude, longitude],
@@ -77,8 +75,8 @@ export function WeatherMap({ latitude, longitude, cityName, theme = 'dark' }: We
       attributionControl: false,
       layers: [
         L.tileLayer(tileUrl, {
-          subdomains: 'abcd',
           maxZoom: 19,
+          className: isLight ? 'map-tiles-light' : 'map-tiles-dark',
         }),
       ],
     });
