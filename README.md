@@ -1,19 +1,19 @@
-# 🌤️ Nimbus / Weather Tracker & Analytics App
+# 🌤️ SkyPulse — Modern Minimalist Weather App
 
-> A feature-packed, real-time weather forecasting web application with live geolocation tracking, interactive meteorological maps, and an integrated admin analytics dashboard.
+A beautiful, clutter-free, real-time weather forecasting web application with glassmorphism aesthetics, live meteorological radar, and a 100% privacy-first architecture.
 
 ---
 
 ## ✨ Features
 
-- 📍 **Hyperlocal Geolocation**: Automatic browser-based location detection with high-accuracy weather data and reverse geocoding.
-- 🌦️ **Comprehensive Weather Metrics**: Live temperature, weather condition animations, humidity, UV index, wind speed, atmospheric pressure, and visibility.
-- 🕒 **Hourly & 7-Day Forecasts**: Dynamic weather progression timelines and week-ahead multi-day forecasts.
-- ⚠️ **Severe Weather Alerts**: Instant notifications for severe weather conditions and temperature anomalies.
-- 🗺️ **Interactive Weather Radar & Map**: Integrated Leaflet radar map with layer toggles and pin-drop location inspection.
-- 🔍 **Search & Bookmark System**: Instant global city search, recent search history, and favorite locations bookmarking.
-- 📊 **Owner / Admin Dashboard (`?role=owner`)**: Real-time visitor logs, live visitor mapping, device/browser insights, and traffic analytics.
-- 🎨 **Modern Glassmorphic UI**: Powered by Tailwind CSS and Framer Motion with dynamic weather-reactive background animations and Dark/Light mode support.
+- 📍 **Hyperlocal Geolocation**: Seamless browser-based location detection with high-accuracy weather data and reverse geocoding.
+- 🌦️ **Comprehensive Weather Metrics**: Live temperature, apparent "feels like", humidity, UV index, wind speed & direction, atmospheric pressure, and visibility.
+- 🕒 **Hourly & 7-Day Forecasts**: Minimalist hourly timeline and week-ahead multi-day forecast with Apple-style temperature range bars.
+- ⚠️ **Weather Advisories**: Real-time alerts for severe weather and extreme conditions.
+- 🗺️ **Interactive Radar Map**: Integrated Leaflet radar map with live RainViewer precipitation overlay.
+- 🔍 **Search & Bookmark System**: Global city search with keyboard shortcut (`/`), recent search history, and favorite locations bookmarking.
+- 🎨 **Modern Minimalist UI**: Built with Tailwind CSS, Framer Motion, and weather-reactive ambient lighting with Dark/Light mode support.
+- 🔒 **100% Privacy-First**: Zero server-side tracking, zero telemetry, and zero location logging. All requests run client-side.
 
 ---
 
@@ -21,5 +21,5 @@
 
 - **Frontend**: React 19, TypeScript, Vite, Tailwind CSS
 - **Animations & Icons**: Framer Motion (`motion/react`), Lucide React
-- **Mapping & Geodata**: Leaflet, Open-Meteo API
-- **Backend & APIs**: Express.js, Node.js / tsx
+- **Mapping & Geodata**: Leaflet, OpenStreetMap, Open-Meteo API, RainViewer API
+- **Server**: Express.js (static / dev middleware)
